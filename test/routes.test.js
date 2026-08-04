@@ -1,13 +1,14 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import app from '../index.js';
+import app from '../src/app.js';
 
-const BASE = 'http://localhost:3000';
 let server;
+let base;
 
 before(async () => {
-  server = app.listen(3000);
+  server = app.listen(0);
   await new Promise((resolve) => server.once('listening', resolve));
+  base = `http://localhost:${server.address().port}`;
 });
 
 after(async () => {
@@ -20,7 +21,7 @@ async function req(method, path, body) {
     opts.headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(body);
   }
-  const res = await fetch(`${BASE}${path}`, opts);
+  const res = await fetch(`${base}${path}`, opts);
   const text = await res.text();
   return { status: res.status, body: text ? JSON.parse(text) : null };
 }
@@ -189,7 +190,7 @@ test('POST /tasks 400 with object title', async () => {
 });
 
 test('POST /tasks 400 with malformed JSON', async () => {
-  const res = await fetch(`${BASE}/tasks`, {
+  const res = await fetch(`${base}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: '{"title": "oops"'

@@ -1,10 +1,9 @@
 import express from 'express';
 import swagger from 'swagger-ui-express';
-import apiDoc from './openapi.json' with { type: 'json' };
-import { fileURLToPath } from 'node:url';
+import apiDoc from '../openapi.json' with { type: 'json' };
+import { validateBody, createRules, updateRules } from './validation.js';
 
 const app = express();
-const port = 3000;
 
 app.use(express.json());
 app.use('/docs', swagger.serve, swagger.setup(apiDoc));
@@ -16,28 +15,6 @@ const tasks = new Map([
 ]);
 
 let nextId = 4;
-
-function isValidTitle(title) {
-  return typeof title === 'string' && title.trim() !== '';
-}
-
-const isBoolean = (v) => typeof v === 'boolean';
-
-const createRules = { title: isValidTitle };
-const updateRules = { title: isValidTitle, done: isBoolean };
-
-function validateBody(body, rules, { required = [], requireOne = false } = {}) {
-  if (body == null || typeof body !== 'object' || Array.isArray(body)) {
-    return { error: 'Invalid request body' };
-  }
-  const keys = Object.keys(body);
-  if (keys.some((k) => !(k in rules))) return { error: 'Invalid request body' };
-  if (requireOne && keys.length === 0) return { error: 'Invalid request body' };
-  if (required.some((k) => !(k in body))) return { error: 'Missing title' };
-  if (required.some((k) => !rules[k](body[k]))) return { error: 'Missing title' };
-  if (!keys.every((k) => rules[k](body[k]))) return { error: 'Invalid request body' };
-  return { body };
-}
 
 function requireTask(req, res, next) {
   const raw = req.params.id;
@@ -100,13 +77,5 @@ app.use((err, req, res, next) => {
   }
   res.status(status).send({ error: 'Invalid request body' });
 });
-
-const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
-
-if (isMain) {
-  app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
-  });
-}
 
 export default app;
