@@ -1,10 +1,13 @@
 import express from 'express';
+import swagger from 'swagger-ui-express';
+import apiDoc from './openapi.json' with { type: 'json' };
 import { fileURLToPath } from 'node:url';
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
+app.use('/docs', swagger.serve, swagger.setup(apiDoc));
 
 const tasks = new Map([
   [1, {id: 1, title: 'Sample Task A', done: false}],
