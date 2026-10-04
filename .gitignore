@@ -1,6 +1,7 @@
 node_modules
 package-lock.json
 .opencode
-docs
 AGENTS.md
 .agents
+test
+docs/'W2 - Build your first CRUD API.pdf'

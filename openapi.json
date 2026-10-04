@@ -1,0 +1,428 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "be-01 express API",
+    "version": "Stage 5"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tasks",
+      "description": "CRUD operations on the in-memory task store."
+    },
+    {
+      "name": "Meta",
+      "description": "Service metadata and health endpoints."
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "Meta"
+        ],
+        "summary": "Returns API metadata and the list of routes.",
+        "responses": {
+          "200": {
+            "description": "API name, version and available endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "version",
+                    "endpoints"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Task API"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "stage-4"
+                    },
+                    "endpoints": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "/tasks",
+                        "/health",
+                        "/tasks/{id}"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Meta"
+        ],
+        "summary": "Checks whether the server is up.",
+        "responses": {
+          "200": {
+            "description": "Server is healthy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Returns a list of all tasks.",
+        "responses": {
+          "200": {
+            "description": "Array of all tasks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Creates a new task from a title.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Payload for creating a task. `done` is rejected if present.",
+                "required": [
+                  "title"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Non-empty task title.",
+                    "example": "Write the OpenAPI spec"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created; done always starts as false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "done was provided, or title is missing/not a non-empty string.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "doneNotSupported": {
+                    "value": {
+                      "error": "done is not supported on POST"
+                    }
+                  },
+                  "invalidTitle": {
+                    "value": {
+                      "error": "Missing or invalid title"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Content-Type is not application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Expected application/json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "Integer task ID (must be non-zero).",
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Returns a specific task by ID.",
+        "responses": {
+          "200": {
+            "description": "The requested task.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID is not an integer or is zero.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Invalid ID"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No task exists with that ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Task 42 not found"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Updates an existing task; accepts partial updates.",
+        "description": "Supports partial updates: omit `title` or `done` to leave that field unchanged.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Partial update payload; at least one field is expected.",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "New non-empty task title.",
+                    "example": "Write the OpenAPI spec"
+                  },
+                  "done": {
+                    "type": "boolean",
+                    "description": "New completion state.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated task.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID is invalid, or a provided title/done value is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "invalidId": {
+                    "value": {
+                      "error": "Invalid ID"
+                    }
+                  },
+                  "invalidTitle": {
+                    "value": {
+                      "error": "Invalid title"
+                    }
+                  },
+                  "invalidDone": {
+                    "value": {
+                      "error": "Invalid done"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No task exists with that ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Task 42 not found"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Content-Type is not application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Expected application/json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Deletes an existing task by ID.",
+        "responses": {
+          "204": {
+            "description": "Task deleted; no content returned."
+          },
+          "400": {
+            "description": "ID is not an integer or is zero.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Invalid ID"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No task exists with that ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Task 42 not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Task": {
+        "type": "object",
+        "description": "A single task.",
+        "required": [
+          "id",
+          "title",
+          "done"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Sample Task A"
+          },
+          "done": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error envelope returned by all failure responses.",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Task 42 not found"
+          }
+        }
+      }
+    }
+  }
+}
