@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.4",
   "info": {
-    "title": "be-01 express API",
+    "title": "BE-01 Task API",
     "version": "Stage 5"
   },
   "servers": [
