@@ -1,0 +1,55 @@
+# FlyRank BE-01 Task API
+
+FlyRank internship assignment BE-01 for the Backend AI Engineering track.
+An in-memory CRUD API for tasks built on Node.js (ESM) and Express 5.
+Interactive API docs are served with Swagger UI.
+
+## Install and run
+
+```bash
+npm install
+node index.js
+```
+
+The server listens on <http://localhost:3000>.
+Swagger UI is at <http://localhost:3000/docs>.
+
+## Endpoints
+
+| Method | Path         | Body                    | Success | Errors                                                                  |
+| ------ | ------------ | ----------------------- | ------- | ----------------------------------------------------------------------- |
+| GET    | `/`          | –                       | 200     | –                                                                       |
+| GET    | `/health`    | –                       | 200     | –                                                                       |
+| GET    | `/tasks`     | –                       | 200     | –                                                                       |
+| GET    | `/tasks/:id` | –                       | 200     | 400 invalid ID, 404 not found                                           |
+| POST   | `/tasks`     | `{ "title": string }`   | 201     | 400 missing/invalid title or `done` supplied, 415 non-JSON content type |
+| PUT    | `/tasks/:id` | `{ "title"?, "done"? }` | 200     | 400 invalid ID/title/done, 404 not found, 415 non-JSON content type     |
+| DELETE | `/tasks/:id` | –                       | 204     | 400 invalid ID, 404 not found                                           |
+
+## Sample output
+
+`GET /tasks`
+
+```json
+[
+  { "id": 1, "title": "Sample Task A", "done": false },
+  { "id": 2, "title": "Sample Task B", "done": true },
+  { "id": 3, "title": "Sample Task C", "done": false }
+]
+```
+
+`POST /tasks` with `{"title":"Write README"}` → `201 Created`
+
+```json
+{ "id": 4, "title": "Write README", "done": false }
+```
+
+Validation failures return an error object:
+
+```json
+{ "error": "Missing or invalid title" }
+```
+
+## Swagger screenshot
+
+![Swagger UI screenshot](docs/swagger_screenshot.png)
