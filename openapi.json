@@ -2,7 +2,7 @@
   "openapi": "3.0.4",
   "info": {
     "title": "BE-01 Task API",
-    "version": "Stage 5"
+    "version": "Stage 6.1"
   },
   "servers": [
     {
@@ -100,10 +100,26 @@
         "tags": [
           "Tasks"
         ],
-        "summary": "Returns a list of all tasks.",
+        "summary": "Returns a list of tasks, optionally filtered by completion state.",
+        "parameters": [
+          {
+            "name": "done",
+            "in": "query",
+            "required": false,
+            "description": "Filter by completion state. Omit to return all tasks.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "example": "true"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Array of all tasks.",
+            "description": "Array of matching tasks (all tasks when no filter is supplied).",
             "content": {
               "application/json": {
                 "schema": {
@@ -111,6 +127,19 @@
                   "items": {
                     "$ref": "#/components/schemas/Task"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "done was supplied with a value other than \"true\" or \"false\".",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Invalid done filter"
                 }
               }
             }

@@ -21,8 +21,9 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapi));
 app.get("/", (_req, res) => {
   res.send({
     name: "Task API",
-    version: "stage-4",
+    version: "Stage 6.1",
     endpoints: [
+      "/docs",
       "/tasks",
       "/health",
       "/tasks/{id}",
@@ -37,8 +38,13 @@ app.get("/health", (_req, res) => {
   res.send({ status: "ok" });
 });
 
-app.get("/tasks", (_req, res) => {
-  res.send([...tasks.values()]);
+app.get("/tasks", (req, res) => {
+  const { done } = req.query;
+  if (done === undefined) return res.send([...tasks.values()]);
+  if (done !== "true" && done !== "false")
+    return res.status(400).send({ error: "Invalid done filter" });
+  const filterDone = done === "true";
+  res.send([...tasks.values()].filter((task) => task.done === filterDone));
 });
 
 app.get("/tasks/:id", getTaskById(tasks), (req, res) => {

@@ -20,7 +20,7 @@ Swagger UI is at <http://localhost:3000/docs>.
 | ------ | ------------ | ----------------------- | ------- | ----------------------------------------------------------------------- |
 | GET    | `/`          | –                       | 200     | –                                                                       |
 | GET    | `/health`    | –                       | 200     | –                                                                       |
-| GET    | `/tasks`     | –                       | 200     | –                                                                       |
+| GET    | `/tasks`     | –                       | 200     | 400 invalid `done` filter                                               |
 | GET    | `/tasks/:id` | –                       | 200     | 400 invalid ID, 404 not found                                           |
 | POST   | `/tasks`     | `{ "title": string }`   | 201     | 400 missing/invalid title or `done` supplied, 415 non-JSON content type |
 | PUT    | `/tasks/:id` | `{ "title"?, "done"? }` | 200     | 400 invalid ID/title/done, 404 not found, 415 non-JSON content type     |
@@ -36,6 +36,20 @@ Swagger UI is at <http://localhost:3000/docs>.
   { "id": 2, "title": "Sample Task B", "done": true },
   { "id": 3, "title": "Sample Task C", "done": false }
 ]
+```
+
+`GET /tasks?done=true` (filter by completion state)
+
+```json
+[
+  { "id": 2, "title": "Sample Task B", "done": true }
+]
+```
+
+An invalid filter value returns:
+
+```json
+{ "error": "Invalid done filter" }
 ```
 
 `POST /tasks` with `{"title":"Write README"}` → `201 Created`
