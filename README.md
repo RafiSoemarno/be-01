@@ -94,3 +94,9 @@ Validation failures return an error object:
 ## Swagger screenshot
 
 ![Swagger UI screenshot](docs/swagger_screenshot.png)
+
+## Mortality experiment
+
+> Restarting the server caused all tasks created in the previous instance to be lost.
+> This is because the server holds all tasks in-memory and does not write the data to a
+> persistent storage location such as a file or database.
