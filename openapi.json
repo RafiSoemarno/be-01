@@ -2,7 +2,7 @@
   "openapi": "3.0.4",
   "info": {
     "title": "BE-01 Task API",
-    "version": "Stage 6.1"
+    "version": "Stage 6.2"
   },
   "servers": [
     {
@@ -100,7 +100,7 @@
         "tags": [
           "Tasks"
         ],
-        "summary": "Returns a list of tasks, optionally filtered by completion state.",
+        "summary": "Returns a list of tasks, optionally filtered by completion state and/or a title substring.",
         "parameters": [
           {
             "name": "done",
@@ -114,6 +114,16 @@
                 "false"
               ],
               "example": "true"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Case-insensitive substring match against task titles. Omit to return all tasks.",
+            "schema": {
+              "type": "string",
+              "example": "sample"
             }
           }
         ],
@@ -132,14 +142,23 @@
             }
           },
           "400": {
-            "description": "done was supplied with a value other than \"true\" or \"false\".",
+            "description": "A query parameter was supplied with an invalid value: `done` must be true or false, and `search` must be a string.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 },
-                "example": {
-                  "error": "Invalid done filter"
+                "examples": {
+                  "invalidDone": {
+                    "value": {
+                      "error": "Invalid done query"
+                    }
+                  },
+                  "invalidSearch": {
+                    "value": {
+                      "error": "Invalid search query"
+                    }
+                  }
                 }
               }
             }

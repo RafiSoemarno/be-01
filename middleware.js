@@ -24,3 +24,19 @@ export function getTaskById(tasks) {
     next();
   };
 }
+
+/**
+ * Express middleware; 400 on invalid `done` or `search` query param.
+ * Absent params pass. `search` is trimmed and lowercased.
+ */
+export function validateQuery(req, res, next) {
+  const { done, search } = req.query;
+  if (done !== undefined && done !== "true" && done !== "false")
+    return res.status(400).send({ error: "Invalid done query" });
+  if (search !== undefined) {
+    if (typeof search !== "string")
+      return res.status(400).send({ error: "Invalid search query" });
+    req.query.search = search.trim().toLowerCase();
+  }
+  next();
+}

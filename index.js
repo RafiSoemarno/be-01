@@ -2,7 +2,7 @@ import express from "express";
 import swaggerUi from "swagger-ui-express";
 import openapi from "./openapi.json" with { type: "json" };
 import { isValidTitle, isValidDone } from "./utilities.js";
-import { requireJson, getTaskById } from "./middleware.js";
+import { requireJson, getTaskById, validateQuery } from "./middleware.js";
 
 const app = express();
 const port = 3000;
@@ -21,7 +21,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapi));
 app.get("/", (_req, res) => {
   res.send({
     name: "Task API",
-    version: "Stage 6.1",
+    version: "Stage 6.2",
     endpoints: [
       "/docs",
       "/tasks",
@@ -38,13 +38,12 @@ app.get("/health", (_req, res) => {
   res.send({ status: "ok" });
 });
 
-app.get("/tasks", (req, res) => {
-  const { done } = req.query;
-  if (done === undefined) return res.send([...tasks.values()]);
-  if (done !== "true" && done !== "false")
-    return res.status(400).send({ error: "Invalid done filter" });
-  const filterDone = done === "true";
-  res.send([...tasks.values()].filter((task) => task.done === filterDone));
+app.get("/tasks", validateQuery, (req, res) => {
+  const { done, search } = req.query;
+  const match = (task) =>
+    (done === undefined || task.done === (done === "true")) &&
+    (search === undefined || task.title.toLowerCase().includes(search));
+  res.send([...tasks.values()].filter(match));
 });
 
 app.get("/tasks/:id", getTaskById(tasks), (req, res) => {
@@ -62,10 +61,7 @@ app.post("/tasks", requireJson, (req, res) => {
   res.status(201).send(task);
 });
 
-/**
- * updates existing task by ID given title and/or done
- * accepts partial updates - should probably use PATCH instead
- */
+// accepts partial updates - should probably use PATCH instead
 app.put("/tasks/:id", requireJson, getTaskById(tasks), (req, res) => {
   const { title, done } = req.body;
   const validTitle = isValidTitle(title);
