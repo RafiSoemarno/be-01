@@ -1,6 +1,7 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import openapi from "./openapi.json" with { type: "json" };
+import seed from "./seed.json" with { type: "json" };
 import { isValidTitle, isValidDone } from "./utilities.js";
 import { requireJson, getTaskById, validateQuery } from "./middleware.js";
 
@@ -8,12 +9,10 @@ const app = express();
 const port = 3000;
 
 // using Map for O(1) search time
-const tasks = new Map([
-  [1, { id: 1, title: "Sample Task A", done: false }],
-  [2, { id: 2, title: "Sample Task B", done: true }],
-  [3, { id: 3, title: "Sample Task C", done: false }],
-]);
-let nextId = 4;
+const tasks = new Map(seed.map((task) => [task.id, task]));
+// set floor = 0 to avoid errors with empty arrays
+const nextSeedId = Math.max(0, ...seed.map((task) => task.id)) + 1;
+let nextId = nextSeedId;
 
 app.use(express.json());
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapi));
@@ -21,7 +20,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapi));
 app.get("/", (_req, res) => {
   res.send({
     name: "Task API",
-    version: "Stage 6.3",
+    version: "Stage 6.4",
     endpoints: [
       "/docs",
       "/tasks",
@@ -29,6 +28,7 @@ app.get("/", (_req, res) => {
       "/stats",
       "/tasks/{id}",
       "POST /tasks",
+      "POST /reset",
       "PUT /tasks/{id}",
       "DELETE /tasks/{id}",
     ],
@@ -47,7 +47,9 @@ app.get("/stats", (_req, res) => {
 });
 
 app.get("/tasks", validateQuery, (req, res) => {
-  const { done, search } = req.query;
+  const { done } = req.query;
+  // normalize here: req.query is a read-only getter in Express 5
+  const search = req.query.search?.trim().toLowerCase();
   const match = (task) =>
     (done === undefined || task.done === (done === "true")) &&
     (search === undefined || task.title.toLowerCase().includes(search));
@@ -67,6 +69,13 @@ app.post("/tasks", requireJson, (req, res) => {
   const task = { id: nextId++, title, done: false };
   tasks.set(task.id, task);
   res.status(201).send(task);
+});
+
+app.post("/reset", (_req, res) => {
+  tasks.clear();
+  for (const task of seed) tasks.set(task.id, task);
+  nextId = nextSeedId;
+  res.send([...tasks.values()]);
 });
 
 // accepts partial updates - should probably use PATCH instead

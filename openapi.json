@@ -2,7 +2,7 @@
   "openapi": "3.0.4",
   "info": {
     "title": "BE-01 Task API",
-    "version": "Stage 6.3"
+    "version": "Stage 6.4"
   },
   "servers": [
     {
@@ -45,7 +45,7 @@
                     },
                     "version": {
                       "type": "string",
-                      "example": "stage-4"
+                      "example": "Stage 6.3"
                     },
                     "endpoints": {
                       "type": "array",
@@ -57,7 +57,11 @@
                         "/tasks",
                         "/health",
                         "/stats",
-                        "/tasks/{id}"
+                        "/tasks/{id}",
+                        "POST /tasks",
+                        "POST /reset",
+                        "PUT /tasks/{id}",
+                        "DELETE /tasks/{id}"
                       ]
                     }
                   }
@@ -469,6 +473,30 @@
                 },
                 "example": {
                   "error": "Task 42 not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reset": {
+      "post": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Resets the task store to the seed data.",
+        "description": "Clears the in-memory store and reloads the tasks from `seed.json`, restoring the initial tasks and the next-ID counter.",
+        "responses": {
+          "200": {
+            "description": "The store was reset; returns the restored tasks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
                 }
               }
             }

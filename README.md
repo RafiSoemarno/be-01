@@ -2,7 +2,8 @@
 
 FlyRank internship assignment BE-01 for the Backend AI Engineering track.
 An in-memory CRUD API for tasks built on Node.js (ESM) and Express 5.
-Interactive API docs are served with Swagger UI.
+The store is seeded from `seed.json` at startup and can be restored to that
+state with `POST /reset`. Interactive API docs are served with Swagger UI.
 
 ## Install and run
 
@@ -24,6 +25,7 @@ Swagger UI is at <http://localhost:3000/docs>.
 | GET    | `/tasks`     | –                       | 200     | 400 invalid `done`/`search` query                                       |
 | GET    | `/tasks/:id` | –                       | 200     | 400 invalid ID, 404 not found                                           |
 | POST   | `/tasks`     | `{ "title": string }`   | 201     | 400 missing/invalid title or `done` supplied, 415 non-JSON content type |
+| POST   | `/reset`     | –                       | 200     | –                                                                       |
 | PUT    | `/tasks/:id` | `{ "title"?, "done"? }` | 200     | 400 invalid ID/title/done, 404 not found, 415 non-JSON content type     |
 | DELETE | `/tasks/:id` | –                       | 204     | 400 invalid ID, 404 not found                                           |
 
@@ -71,6 +73,16 @@ Filters can be combined, e.g. `GET /tasks?done=false&search=sample`. An invalid 
 
 ```json
 { "id": 4, "title": "Write README", "done": false }
+```
+
+`POST /reset` (restores the seed data) → `200 OK`
+
+```json
+[
+  { "id": 1, "title": "Sample Task A", "done": false },
+  { "id": 2, "title": "Sample Task B", "done": true },
+  { "id": 3, "title": "Sample Task C", "done": false }
+]
 ```
 
 Validation failures return an error object:

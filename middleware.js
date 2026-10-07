@@ -27,16 +27,14 @@ export function getTaskById(tasks) {
 
 /**
  * Express middleware; 400 on invalid `done` or `search` query param.
- * Absent params pass. `search` is trimmed and lowercased.
+ * Absent params pass. Normalization of `search` is left to the route handler,
+ * since `req.query` is a read-only getter in Express 5.
  */
 export function validateQuery(req, res, next) {
   const { done, search } = req.query;
   if (done !== undefined && done !== "true" && done !== "false")
     return res.status(400).send({ error: "Invalid done query" });
-  if (search !== undefined) {
-    if (typeof search !== "string")
-      return res.status(400).send({ error: "Invalid search query" });
-    req.query.search = search.trim().toLowerCase();
-  }
+  if (search !== undefined && typeof search !== "string")
+    return res.status(400).send({ error: "Invalid search query" });
   next();
 }
