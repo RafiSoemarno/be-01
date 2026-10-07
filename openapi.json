@@ -2,7 +2,7 @@
   "openapi": "3.0.4",
   "info": {
     "title": "BE-01 Task API",
-    "version": "Stage 6.2"
+    "version": "Stage 6.3"
   },
   "servers": [
     {
@@ -53,8 +53,10 @@
                         "type": "string"
                       },
                       "example": [
+                        "/docs",
                         "/tasks",
                         "/health",
+                        "/stats",
                         "/tasks/{id}"
                       ]
                     }
@@ -86,6 +88,49 @@
                     "status": {
                       "type": "string",
                       "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stats": {
+      "get": {
+        "tags": [
+          "Meta"
+        ],
+        "summary": "Returns aggregate counts of the task store.",
+        "description": "Totals derived from the in-memory store: `total` is the number of tasks, `done` counts completed tasks, and `open` is `total - done`.",
+        "responses": {
+          "200": {
+            "description": "Task counts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "total",
+                    "done",
+                    "open"
+                  ],
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "description": "Total number of tasks.",
+                      "example": 3
+                    },
+                    "done": {
+                      "type": "integer",
+                      "description": "Number of completed tasks.",
+                      "example": 1
+                    },
+                    "open": {
+                      "type": "integer",
+                      "description": "Number of incomplete tasks (`total - done`).",
+                      "example": 2
                     }
                   }
                 }

@@ -21,11 +21,12 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapi));
 app.get("/", (_req, res) => {
   res.send({
     name: "Task API",
-    version: "Stage 6.2",
+    version: "Stage 6.3",
     endpoints: [
       "/docs",
       "/tasks",
       "/health",
+      "/stats",
       "/tasks/{id}",
       "POST /tasks",
       "PUT /tasks/{id}",
@@ -36,6 +37,13 @@ app.get("/", (_req, res) => {
 
 app.get("/health", (_req, res) => {
   res.send({ status: "ok" });
+});
+
+app.get("/stats", (_req, res) => {
+  const total = tasks.size;
+  const done = [...tasks.values()].filter((task) => task.done).length;
+  const open = total - done;
+  res.send({ total, done, open });
 });
 
 app.get("/tasks", validateQuery, (req, res) => {

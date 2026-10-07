@@ -20,6 +20,7 @@ Swagger UI is at <http://localhost:3000/docs>.
 | ------ | ------------ | ----------------------- | ------- | ----------------------------------------------------------------------- |
 | GET    | `/`          | –                       | 200     | –                                                                       |
 | GET    | `/health`    | –                       | 200     | –                                                                       |
+| GET    | `/stats`     | –                       | 200     | –                                                                       |
 | GET    | `/tasks`     | –                       | 200     | 400 invalid `done`/`search` query                                       |
 | GET    | `/tasks/:id` | –                       | 200     | 400 invalid ID, 404 not found                                           |
 | POST   | `/tasks`     | `{ "title": string }`   | 201     | 400 missing/invalid title or `done` supplied, 415 non-JSON content type |
@@ -36,6 +37,12 @@ Swagger UI is at <http://localhost:3000/docs>.
   { "id": 2, "title": "Sample Task B", "done": true },
   { "id": 3, "title": "Sample Task C", "done": false }
 ]
+```
+
+`GET /stats` (aggregate task counts)
+
+```json
+{ "total": 3, "done": 1, "open": 2 }
 ```
 
 `GET /tasks?done=true` (filter by completion state)
