@@ -16,7 +16,7 @@ export function requireJson(req, res, next) {
 export function getTaskById(tasks) {
   return function getTaskById(req, res, next) {
     const id = Number(req.params.id); // empty string becomes 0
-    if (!Number.isInteger(id) || id == 0)
+    if (!Number.isInteger(id) || id < 1) // reject negatives
       return res.status(400).send({ error: "Invalid ID" });
     const task = tasks.get(id);
     if (!task) return res.status(404).send({ error: `Task ${id} not found` });

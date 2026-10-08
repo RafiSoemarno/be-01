@@ -26,7 +26,7 @@ Swagger UI is at <http://localhost:3000/docs>.
 | GET    | `/tasks/:id` | –                       | 200     | 400 invalid ID, 404 not found                                           |
 | POST   | `/tasks`     | `{ "title": string }`   | 201     | 400 missing/invalid title or `done` supplied, 415 non-JSON content type |
 | POST   | `/reset`     | –                       | 200     | –                                                                       |
-| PUT    | `/tasks/:id` | `{ "title"?, "done"? }` | 200     | 400 invalid ID/title/done, 404 not found, 415 non-JSON content type     |
+| PATCH  | `/tasks/:id` | `{ "title"?, "done"? }` | 200     | 400 invalid ID/title/done, 404 not found, 415 non-JSON content type     |
 | DELETE | `/tasks/:id` | –                       | 204     | 400 invalid ID, 404 not found                                           |
 
 ## Sample output

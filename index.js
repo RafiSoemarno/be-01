@@ -20,7 +20,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapi));
 app.get("/", (_req, res) => {
   res.send({
     name: "Task API",
-    version: "Stage 6.4",
+    version: "Stage 6.4.1",
     endpoints: [
       "/docs",
       "/tasks",
@@ -29,7 +29,7 @@ app.get("/", (_req, res) => {
       "/tasks/{id}",
       "POST /tasks",
       "POST /reset",
-      "PUT /tasks/{id}",
+      "PATCH /tasks/{id}",
       "DELETE /tasks/{id}",
     ],
   });
@@ -78,20 +78,23 @@ app.post("/reset", (_req, res) => {
   res.send([...tasks.values()]);
 });
 
-// accepts partial updates - should probably use PATCH instead
-app.put("/tasks/:id", requireJson, getTaskById(tasks), (req, res) => {
+app.patch("/tasks/:id", requireJson, getTaskById(tasks), (req, res) => {
   const { title, done } = req.body;
-  const validTitle = isValidTitle(title);
-  const validDone = isValidDone(done);
-  const hasTitle = "title" in req.body;
-  const hasDone = "done" in req.body;
-  if (hasTitle && !validTitle)
-    return res.status(400).send({ error: "Invalid title" });
-  if (hasDone && !validDone)
-    return res.status(400).send({ error: "Invalid done" });
-  let task = { ...req.task };
-  if (validTitle) task.title = title;
-  if (validDone) task.done = done;
+  const task = { ...req.task };
+  const hasTitle = req.body.title !== undefined;
+  const hasDone = req.body.done !== undefined;
+  if (!hasTitle && !hasDone)
+    return res.status(400).send({ error: "Missing title/done" });
+  if (hasTitle) {
+    if (!isValidTitle(title))
+      return res.status(400).send({ error: "Invalid title" });
+    task.title = title;
+  }
+  if (hasDone) {
+    if (!isValidDone(done))
+      return res.status(400).send({ error: "Invalid done" });
+    task.done = done;
+  }
   tasks.set(task.id, task);
   return res.status(200).send(task);
 });

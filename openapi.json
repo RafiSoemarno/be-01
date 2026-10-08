@@ -2,7 +2,7 @@
   "openapi": "3.0.4",
   "info": {
     "title": "BE-01 Task API",
-    "version": "Stage 6.4"
+    "version": "Stage 6.4.1"
   },
   "servers": [
     {
@@ -60,7 +60,7 @@
                         "/tasks/{id}",
                         "POST /tasks",
                         "POST /reset",
-                        "PUT /tasks/{id}",
+                        "PATCH /tasks/{id}",
                         "DELETE /tasks/{id}"
                       ]
                     }
@@ -347,7 +347,7 @@
           }
         }
       },
-      "put": {
+      "patch": {
         "tags": [
           "Tasks"
         ],
